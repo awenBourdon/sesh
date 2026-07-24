@@ -1,4 +1,3 @@
-# .github/workflows/server-ci.yml
 name: Server CI
 
 on:

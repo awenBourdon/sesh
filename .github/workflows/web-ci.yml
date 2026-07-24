@@ -1,4 +1,3 @@
-# .github/workflows/web-ci.yml
 name: Web CI
 
 on:
