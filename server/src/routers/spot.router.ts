@@ -1,10 +1,10 @@
 import { router, publicProcedure} from '../trpc';
 import { z } from 'zod';
+import { db } from '../db';
+import { spots } from '../db/schema';
 
 export const spotsRouter = router({
-    getAll: publicProcedure.query(() => {
-        return [{ id: 1, name: 'Hello Spot'}];
-    }),
+    getAll: publicProcedure.query(() => db.select().from(spots)),
     create: publicProcedure
         .input(z.object({ name: z.string().min(1) }))
         .mutation(({ input}) => {
