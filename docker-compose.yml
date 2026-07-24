@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sesh
+      POSTGRES_PASSWORD: sesh_dev_password
+      POSTGRES_DB: sesh
+    ports:
+      - "5432:5432"
+    volumes:
+      - sesh_pgdata:/var/lib/postgresql
+
+volumes:
+  sesh_pgdata:
