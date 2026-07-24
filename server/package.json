@@ -12,6 +12,7 @@
     "drizzle-kit": "^0.31.10"
   },
   "scripts": {
-    "dev": "bun --watch src/index.ts"
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc"
   }
 }
