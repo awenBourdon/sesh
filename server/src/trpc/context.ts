@@ -5,7 +5,7 @@ import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import '@fastify/cookie';
 
-export async function createContext({ req }: CreateFastifyContextOptions) {
+export async function createContext({ req, res }: CreateFastifyContextOptions) {
   const token = req.cookies?.token;
   let user = null;
 
@@ -19,7 +19,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     }
   }
 
-  return { db, user };
+  return { db, user, res };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
