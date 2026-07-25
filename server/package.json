@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
+    "@fastify/cors": "^11.3.0",
     "@trpc/server": "^11.18.0",
     "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.2",
