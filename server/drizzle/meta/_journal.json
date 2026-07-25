@@ -8,6 +8,13 @@
       "when": 1784932592260,
       "tag": "0000_shiny_lily_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785012022467,
+      "tag": "0001_foamy_steel_serpent",
+      "breakpoints": true
     }
   ]
 }
