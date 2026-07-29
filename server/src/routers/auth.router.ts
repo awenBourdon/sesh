@@ -1,30 +1,42 @@
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { z } from 'zod';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { db } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import { TRPCError } from '@trpc/server';
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { z } from "zod";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { db } from "../db";
+import { users } from "../db/schema";
+import { eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 export const authRouter = router({
   register: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      username: z.string().min(3),
-      password: z.string().min(8),
-    }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        username: z.string().min(3),
+        password: z.string().min(8),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await bcrypt.hash(input.password, 10);
 
-      const [user] = await db.insert(users).values({
-        email: input.email,
-        username: input.username,
-        passwordHash,
-      }).returning();
+      const [user] = await db
+        .insert(users)
+        .values({
+          email: input.email,
+          username: input.username,
+          passwordHash,
+        })
+        .returning();
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
-      ctx.res.setCookie('token', token, { httpOnly: true, path: '/', sameSite: 'lax' });
+      if (!user) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Échec de la création du compte",
+        });
+      }
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+      ctx.res.setCookie("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
 
       return { id: user.id, username: user.username };
     }),
@@ -35,11 +47,11 @@ export const authRouter = router({
       const [user] = await db.select().from(users).where(eq(users.email, input.email));
 
       if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Identifiants invalides' });
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Identifiants invalides" });
       }
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
-      ctx.res.setCookie('token', token, { httpOnly: true, path: '/', sameSite: 'lax' });
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+      ctx.res.setCookie("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
 
       return { id: user.id, username: user.username };
     }),
