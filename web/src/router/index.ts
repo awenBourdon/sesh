@@ -1,26 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
+import FeedView from '@/views/FeedView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/home',
+      path: '/',
       name: 'home',
-      component: LoginView,
+      component: HomeView,
       meta: { public: true },
     },
     {
-      path: '/',
+      path: '/login',
       name: 'login',
       component: LoginView,
       meta: { public: true },
     },
     {
-      path: '/test',
-      name: 'test',
-      component: LoginView,
+      path: '/feed',
+      name: 'feed',
+      component: FeedView,
     },
   ],
 })
@@ -44,8 +46,8 @@ router.beforeEach(async (to) => {
     return { name: 'login' }
   }
 
-  if (isPublicRoute && isLoggedIn && to.name !== 'test') {
-    return { name: 'test' }
+  if (isPublicRoute && isLoggedIn && to.name !== 'feed') {
+    return { name: 'feed' }
   }
 })
 

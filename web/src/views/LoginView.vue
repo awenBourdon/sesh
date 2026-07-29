@@ -1,139 +1,131 @@
+<!-- web/src/views/LoginView.vue -->
 <template>
-  <div class="auth-test">
-    <h1>Test Auth — Sesh</h1>
-
-    <section class="status">
-      <h2>Statut</h2>
-      <p v-if="loadingMe">Vérification en cours...</p>
-      <p v-else-if="currentUser">
-        ✅ Connecté en tant que <strong>{{ currentUser.username }}</strong>
-      </p>
-      <p v-else>❌ Non connecté</p>
-      <button v-if="currentUser" @click="checkMe">Rafraîchir le statut</button>
-    </section>
-
-    <section class="form-block">
-      <h2>Créer un compte</h2>
-      <form @submit.prevent="handleRegister">
-        <input v-model="registerForm.email" type="email" placeholder="Email" required />
-        <input
-          v-model="registerForm.username"
-          type="text"
-          placeholder="Nom d'utilisateur"
-          required
-        />
-        <input
-          v-model="registerForm.password"
-          type="password"
-          placeholder="Mot de passe"
-          required
-        />
-        <button type="submit">S'inscrire</button>
-      </form>
-      <p v-if="registerError" class="error">{{ registerError }}</p>
-      <p v-if="registerSuccess" class="success">Compte créé : {{ registerSuccess.username }}</p>
-    </section>
-
-    <section class="form-block">
-      <h2>Se connecter</h2>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1>Connexion</h1>
+      
       <form @submit.prevent="handleLogin">
-        <input v-model="loginForm.email" type="email" placeholder="Email" required />
-        <input v-model="loginForm.password" type="password" placeholder="Mot de passe" required />
-        <button type="submit">Se connecter</button>
-      </form>
-      <p v-if="loginError" class="error">{{ loginError }}</p>
-    </section>
+        <div class="input-group">
+          <label>Email</label>
+          <input v-model="loginForm.email" type="email" placeholder="votre@email.com" required />
+        </div>
+        
+        <div class="input-group">
+          <label>Mot de passe</label>
+          <input v-model="loginForm.password" type="password" placeholder="••••••••" required />
+        </div>
 
-    <section class="form-block" v-if="currentUser">
-      <button @click="handleLogout">Se déconnecter</button>
-    </section>
+        <button type="submit" class="btn-submit">Se connecter</button>
+      </form>
+
+      <p v-if="loginError" class="error">{{ loginError }}</p>
+      
+      <p class="back-link">
+        <RouterLink to="/">← Retour à l'accueil</RouterLink>
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { trpc } from '@/trpc'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { trpc } from '@/trpc';
+import { useAuthStore } from '@/stores/auth';
 
-interface CurrentUser {
-  id: number
-  username: string
-}
+const router = useRouter();
+const authStore = useAuthStore();
 
-const currentUser = ref<CurrentUser | null>(null)
-const loadingMe = ref(true)
-
-const registerForm = ref({ email: '', username: '', password: '' })
-const registerError = ref('')
-const registerSuccess = ref<CurrentUser | null>(null)
-
-const loginForm = ref({ email: '', password: '' })
-const loginError = ref('')
-
-async function checkMe() {
-  loadingMe.value = true
-  try {
-    currentUser.value = await trpc.auth.me.query()
-  } catch {
-    currentUser.value = null
-  } finally {
-    loadingMe.value = false
-  }
-}
-
-async function handleRegister() {
-  registerError.value = ''
-  registerSuccess.value = null
-  try {
-    const user = await trpc.auth.register.mutate(registerForm.value)
-    registerSuccess.value = user
-    await checkMe()
-  } catch (err: any) {
-    registerError.value = err.message ?? 'Erreur inconnue'
-  }
-}
+const loginForm = ref({ email: '', password: '' });
+const loginError = ref('');
 
 async function handleLogin() {
-  loginError.value = ''
+  loginError.value = '';
   try {
-    await trpc.auth.login.mutate(loginForm.value)
-    await checkMe()
+    // 1. Exécute la mutation de login
+    await trpc.auth.login.mutate(loginForm.value);
+    
+    // 2. Met à jour l'état de l'utilisateur dans le store Pinia
+    await authStore.fetchUser();
+    
+    // 3. Redirige vers le tableau de bord / page connectée
+    router.push({ name: 'feed' });
   } catch (err: any) {
-    loginError.value = err.message ?? 'Erreur inconnue'
+    loginError.value = err.message ?? 'Erreur de connexion';
   }
 }
-
-async function handleLogout() {
-  currentUser.value = null
-}
-
-onMounted(checkMe)
 </script>
 
 <style scoped>
-.auth-test {
-  max-width: 400px;
-  margin: 2rem auto;
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
   font-family: sans-serif;
 }
-.form-block {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 2rem;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: white;
+}
+h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #2c3e50;
 }
 form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
-input,
-button {
-  padding: 0.5rem;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #34495e;
+}
+input {
+  padding: 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.btn-submit {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-submit:hover {
+  background-color: #27ae60;
 }
 .error {
-  color: #c0392b;
+  margin-top: 1rem;
+  color: #e74c3c;
+  font-size: 0.9rem;
 }
-.success {
-  color: #27ae60;
+.back-link {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+.back-link a {
+  color: #7f8c8d;
+  text-decoration: none;
+}
+.back-link a:hover {
+  text-decoration: underline;
 }
 </style>
