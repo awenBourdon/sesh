@@ -1,4 +1,3 @@
-<!-- web/src/views/AuthTestView.vue -->
 <template>
   <div class="auth-test">
     <h1>Test Auth — Sesh</h1>
@@ -17,8 +16,18 @@
       <h2>Créer un compte</h2>
       <form @submit.prevent="handleRegister">
         <input v-model="registerForm.email" type="email" placeholder="Email" required />
-        <input v-model="registerForm.username" type="text" placeholder="Nom d'utilisateur" required />
-        <input v-model="registerForm.password" type="password" placeholder="Mot de passe" required />
+        <input
+          v-model="registerForm.username"
+          type="text"
+          placeholder="Nom d'utilisateur"
+          required
+        />
+        <input
+          v-model="registerForm.password"
+          type="password"
+          placeholder="Mot de passe"
+          required
+        />
         <button type="submit">S'inscrire</button>
       </form>
       <p v-if="registerError" class="error">{{ registerError }}</p>
@@ -42,62 +51,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { trpc } from '@/trpc';
+import { ref, onMounted } from 'vue'
+import { trpc } from '@/trpc'
 
 interface CurrentUser {
-  id: number;
-  username: string;
+  id: number
+  username: string
 }
 
-const currentUser = ref<CurrentUser | null>(null);
-const loadingMe = ref(true);
+const currentUser = ref<CurrentUser | null>(null)
+const loadingMe = ref(true)
 
-const registerForm = ref({ email: '', username: '', password: '' });
-const registerError = ref('');
-const registerSuccess = ref<CurrentUser | null>(null);
+const registerForm = ref({ email: '', username: '', password: '' })
+const registerError = ref('')
+const registerSuccess = ref<CurrentUser | null>(null)
 
-const loginForm = ref({ email: '', password: '' });
-const loginError = ref('');
+const loginForm = ref({ email: '', password: '' })
+const loginError = ref('')
 
 async function checkMe() {
-  loadingMe.value = true;
+  loadingMe.value = true
   try {
-    currentUser.value = await trpc.auth.me.query();
+    currentUser.value = await trpc.auth.me.query()
   } catch {
-    currentUser.value = null;
+    currentUser.value = null
   } finally {
-    loadingMe.value = false;
+    loadingMe.value = false
   }
 }
 
 async function handleRegister() {
-  registerError.value = '';
-  registerSuccess.value = null;
+  registerError.value = ''
+  registerSuccess.value = null
   try {
-    const user = await trpc.auth.register.mutate(registerForm.value);
-    registerSuccess.value = user;
-    await checkMe();
+    const user = await trpc.auth.register.mutate(registerForm.value)
+    registerSuccess.value = user
+    await checkMe()
   } catch (err: any) {
-    registerError.value = err.message ?? 'Erreur inconnue';
+    registerError.value = err.message ?? 'Erreur inconnue'
   }
 }
 
 async function handleLogin() {
-  loginError.value = '';
+  loginError.value = ''
   try {
-    await trpc.auth.login.mutate(loginForm.value);
-    await checkMe();
+    await trpc.auth.login.mutate(loginForm.value)
+    await checkMe()
   } catch (err: any) {
-    loginError.value = err.message ?? 'Erreur inconnue';
+    loginError.value = err.message ?? 'Erreur inconnue'
   }
 }
 
 async function handleLogout() {
-  currentUser.value = null;
+  currentUser.value = null
 }
 
-onMounted(checkMe);
+onMounted(checkMe)
 </script>
 
 <style scoped>
@@ -117,9 +126,14 @@ form {
   flex-direction: column;
   gap: 0.5rem;
 }
-input, button {
+input,
+button {
   padding: 0.5rem;
 }
-.error { color: #c0392b; }
-.success { color: #27ae60; }
+.error {
+  color: #c0392b;
+}
+.success {
+  color: #27ae60;
+}
 </style>
