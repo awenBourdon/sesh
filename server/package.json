@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc",
+    "format": "oxfmt ."
+  },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.3.0",
@@ -16,10 +21,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.1",
     "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.31.10"
-  },
-  "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "build": "tsc"
+    "drizzle-kit": "^0.31.10",
+    "oxfmt": "^0.61.0"
   }
 }

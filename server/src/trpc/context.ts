@@ -1,9 +1,9 @@
-import type { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
-import jwt from 'jsonwebtoken';
-import { db } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import '@fastify/cookie';
+import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import jwt from "jsonwebtoken";
+import { db } from "../db";
+import { users } from "../db/schema";
+import { eq } from "drizzle-orm";
+import "@fastify/cookie";
 
 export async function createContext({ req, res }: CreateFastifyContextOptions) {
   const token = req.cookies?.token;
