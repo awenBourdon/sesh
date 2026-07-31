@@ -59,4 +59,9 @@ export const authRouter = router({
   me: protectedProcedure.query(({ ctx }) => {
     return { id: ctx.user.id, username: ctx.user.username };
   }),
+
+  logout: protectedProcedure.mutation(({ ctx }) => {
+    ctx.res.clearCookie("token", { path: "/" });
+    return { success: true };
+  }),
 });
