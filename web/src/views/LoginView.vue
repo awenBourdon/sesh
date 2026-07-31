@@ -3,13 +3,13 @@
   <div class="auth-container">
     <div class="auth-card">
       <h1>Connexion</h1>
-      
+
       <form @submit.prevent="handleLogin">
         <div class="input-group">
           <label>Email</label>
           <input v-model="loginForm.email" type="email" placeholder="votre@email.com" required />
         </div>
-        
+
         <div class="input-group">
           <label>Mot de passe</label>
           <input v-model="loginForm.password" type="password" placeholder="••••••••" required />
@@ -19,7 +19,7 @@
       </form>
 
       <p v-if="loginError" class="error">{{ loginError }}</p>
-      
+
       <p class="back-link">
         <RouterLink to="/">← Retour à l'accueil</RouterLink>
       </p>
@@ -28,30 +28,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { trpc } from '@/trpc';
-import { useAuthStore } from '@/stores/auth';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { trpc } from '@/trpc'
+import { useAuthStore } from '@/stores/auth'
+import { TRPCClientError } from '@trpc/client'
 
-const router = useRouter();
-const authStore = useAuthStore();
+const router = useRouter()
+const authStore = useAuthStore()
 
-const loginForm = ref({ email: '', password: '' });
-const loginError = ref('');
+const loginForm = ref({ email: '', password: '' })
+const loginError = ref('')
 
 async function handleLogin() {
-  loginError.value = '';
+  loginError.value = ''
   try {
-    // 1. Exécute la mutation de login
-    await trpc.auth.login.mutate(loginForm.value);
-    
-    // 2. Met à jour l'état de l'utilisateur dans le store Pinia
-    await authStore.fetchUser();
-    
-    // 3. Redirige vers le tableau de bord / page connectée
-    router.push({ name: 'feed' });
-  } catch (err: any) {
-    loginError.value = err.message ?? 'Erreur de connexion';
+    await trpc.auth.login.mutate(loginForm.value)
+    await authStore.fetchUser()
+    router.push({ name: 'feed' })
+  } catch (err) {
+    if (err instanceof TRPCClientError) {
+      loginError.value = err.message
+    } else {
+      loginError.value = 'Erreur de connexion'
+    }
   }
 }
 </script>
@@ -70,7 +70,7 @@ async function handleLogin() {
   padding: 2rem;
   border: 1px solid #e1e8ed;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   background: white;
 }
 h1 {

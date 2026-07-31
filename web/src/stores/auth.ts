@@ -12,7 +12,6 @@ export const useAuthStore = defineStore('auth', () => {
   const isInitialized = ref(false)
 
   async function fetchUser() {
-    console.log('🔄 [AuthStore] Début de fetchUser...')
     try {
       user.value = await trpc.auth.me.query()
     } catch (err) {
@@ -22,5 +21,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, isInitialized, fetchUser }
+  async function logout() {
+    await trpc.auth.logout.mutate()
+    user.value = null
+  }
+
+  return { user, isInitialized, fetchUser, logout }
 })

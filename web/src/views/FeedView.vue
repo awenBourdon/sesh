@@ -4,24 +4,25 @@
       <span class="badge">Succès</span>
       <h1>Cool, vous êtes connecté !</h1>
       <p v-if="authStore.user">
-        Ravi de vous revoir, <strong>{{ authStore.user.username }}</strong>.
+        Ravi de vous revoir, <strong>{{ authStore.user.username }}</strong
+        >.
       </p>
-      
+
       <button @click="handleLogout" class="btn-logout">Se déconnecter</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter();
-const authStore = useAuthStore();
+const router = useRouter()
+const authStore = useAuthStore()
 
 async function handleLogout() {
- authStore.user = null;
-  router.push({ name: 'login' });
+  await authStore.logout()
+  router.push({ name: 'login' })
 }
 </script>
 
@@ -38,7 +39,7 @@ async function handleLogout() {
   padding: 2.5rem;
   border: 1px solid #e1e8ed;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   background: white;
   max-width: 400px;
   width: 100%;

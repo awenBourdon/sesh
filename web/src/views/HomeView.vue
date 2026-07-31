@@ -3,7 +3,7 @@
   <div class="landing-container">
     <div class="hero">
       <h1>Bienvenue sur Sesh</h1>
-      
+
       <div class="cta-group">
         <RouterLink to="/login" class="btn primary">Se connecter</RouterLink>
       </div>
