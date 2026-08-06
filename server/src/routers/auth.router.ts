@@ -6,6 +6,29 @@ import { db } from "../db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import type { SerializeOptions } from "@fastify/cookie";
+
+const envSchema = z.object({
+  JWT_SECRET: z.string().min(32, "JWT_SECRET doit faire au moins 32 caractères"),
+});
+const env = envSchema.parse(process.env);
+
+const JWT_EXPIRES_IN = "7d";
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
+
+const AUTH_COOKIE_OPTIONS: SerializeOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: COOKIE_MAX_AGE,
+  path: "/",
+};
+
+const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing-safety", 10);
+
+function signToken(userId: number) {
+  return jwt.sign({ userId }, env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
 
 export const authRouter = router({
   register: publicProcedure
@@ -35,8 +58,8 @@ export const authRouter = router({
         });
       }
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-      ctx.res.setCookie("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
+      const token = signToken(user.id);
+      ctx.res.setCookie("token", token, AUTH_COOKIE_OPTIONS);
 
       return { id: user.id, username: user.username };
     }),
@@ -46,12 +69,15 @@ export const authRouter = router({
     .mutation(async ({ input, ctx }) => {
       const [user] = await db.select().from(users).where(eq(users.email, input.email));
 
-      if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
+      const hashToCompare = user?.passwordHash ?? DUMMY_HASH;
+      const passwordValid = await bcrypt.compare(input.password, hashToCompare);
+
+      if (!user || !passwordValid) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Identifiants invalides" });
       }
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-      ctx.res.setCookie("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
+      const token = signToken(user.id);
+      ctx.res.setCookie("token", token, AUTH_COOKIE_OPTIONS);
 
       return { id: user.id, username: user.username };
     }),
@@ -61,7 +87,7 @@ export const authRouter = router({
   }),
 
   logout: protectedProcedure.mutation(({ ctx }) => {
-    ctx.res.clearCookie("token", { path: "/" });
+    ctx.res.clearCookie("token", AUTH_COOKIE_OPTIONS);
     return { success: true };
   }),
 });
