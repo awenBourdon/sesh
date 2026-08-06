@@ -1,21 +1,46 @@
 <template>
-  <div class="dashboard-container">
-    <div class="card">
-      <span class="badge">Succès</span>
-      <h1>Cool, vous êtes connecté !</h1>
-      <p v-if="authStore.user">
-        Ravi de vous revoir, <strong>{{ authStore.user.username }}</strong
-        >.
-      </p>
+  <main class="dashboard">
+    <header class="dashboard-header">
+      <div>
+        <h1>Tableau de bord</h1>
+        <p v-if="authStore.user">
+          Bonjour <strong>{{ authStore.user.username }}</strong>
+        </p>
+      </div>
 
-      <button @click="handleLogout" class="btn-logout">Se déconnecter</button>
-    </div>
-  </div>
+      <button @click="handleLogout" class="btn">
+        Déconnexion
+      </button>
+    </header>
+
+    <section class="map-card">
+      <div id="dashboard-map" class="map"></div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { onMounted } from 'vue'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+import icon from 'leaflet/dist/images/marker-icon.png'
+import iconRetina from 'leaflet/dist/images/marker-icon-2x.png'
+import shadow from 'leaflet/dist/images/marker-shadow.png'
+
+const DefaultIcon = L.icon({
+  iconUrl: icon,
+  iconRetinaUrl: iconRetina,
+  shadowUrl: shadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
+
+L.Marker.prototype.options.icon = DefaultIcon
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -24,56 +49,81 @@ async function handleLogout() {
   await authStore.logout()
   router.push({ name: 'login' })
 }
+
+onMounted(() => {
+  const map = L.map('dashboard-map').setView([48.8566, 2.3522], 12) // Zoom légèrement dézoomé pour voir plus large
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map)
+
+  L.marker([48.8566, 2.3522]).addTo(map)
+})
 </script>
 
 <style scoped>
-.dashboard-container {
+.dashboard {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  font-family: sans-serif;
-}
-.card {
-  text-align: center;
-  padding: 2.5rem;
-  border: 1px solid #e1e8ed;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  background: white;
-  max-width: 400px;
+  flex-direction: column;
+  gap: 2rem;
   width: 100%;
 }
-.badge {
-  display: inline-block;
-  background-color: #e8f8f5;
-  color: #1abc9c;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-h1 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-heading);
 }
-p {
-  color: #7f8c8d;
-  margin-bottom: 2rem;
+
+.dashboard-header p {
+  color: var(--color-text);
+  opacity: .7;
 }
-.btn-logout {
-  padding: 0.7rem 1.5rem;
-  background-color: #e74c3c;
-  color: white;
+
+.map-card {
+  background: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.map {
+  width: 100%;
+  height: 550px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.btn {
+  padding: .7rem 1.2rem;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  background: #e74c3c;
+  color: white;
+  transition: .2s;
 }
-.btn-logout:hover {
-  background-color: #c0392b;
+
+.btn:hover {
+  opacity: .9;
+}
+
+@media (max-width: 700px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .map {
+    height: 400px;
+  }
 }
 </style>
